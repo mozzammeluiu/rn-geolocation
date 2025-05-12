@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">yeamazing</string>
+    <string name="google_geo_api_key" templateMergeStrategy="preserve" translatable="false">"ask for it"</string>
+</resources>
