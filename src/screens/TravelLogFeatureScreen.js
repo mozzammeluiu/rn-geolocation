@@ -20,21 +20,18 @@ import MapView, { Marker } from 'react-native-maps';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
-// Main Travel Log Component
 const TravelLogFeature = () => {
   const [logs, setLogs] = useState([]);
   const [location, setLocation] = useState(null);
   const [manualLocation, setManualLocation] = useState('');
   const [photo, setPhoto] = useState(null);
   const [notes, setNotes] = useState('');
-  const [viewMode, setViewMode] = useState('feed'); // 'feed' or 'map'
+  const [viewMode, setViewMode] = useState('feed');
 
-  // Load logs from AsyncStorage on mount
   useEffect(() => {
     loadLogs();
   }, []);
 
-  // Save logs to AsyncStorage
   const saveLogs = async (newLogs) => {
     try {
       await AsyncStorage.setItem('travelLogs', JSON.stringify(newLogs));
@@ -43,7 +40,6 @@ const TravelLogFeature = () => {
     }
   };
 
-  // Load logs from AsyncStorage
   const loadLogs = async () => {
     try {
       const storedLogs = await AsyncStorage.getItem('travelLogs');
@@ -55,7 +51,7 @@ const TravelLogFeature = () => {
     }
   };
 
-  // Request location permission
+
   const requestLocationPermission = async () => {
     const permission = Platform.OS === 'ios'
       ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
@@ -70,7 +66,7 @@ const TravelLogFeature = () => {
     return requestResult === RESULTS.GRANTED;
   };
 
-  // Get current location using GPS
+
   const getLocation = async () => {
     const hasPermission = await requestLocationPermission();
     if (!hasPermission) {
@@ -84,7 +80,7 @@ const TravelLogFeature = () => {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
-        setManualLocation(''); // Clear manual location if GPS is used
+        setManualLocation('');
       },
       (error) => {
         Alert.alert('Error', `Failed to get location: ${error.message}`);
@@ -93,7 +89,6 @@ const TravelLogFeature = () => {
     );
   };
 
-  // Request camera or gallery permission
   const requestMediaPermission = async (type) => {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.CAMERA,
@@ -108,7 +103,7 @@ const TravelLogFeature = () => {
     return granted === RESULTS.GRANTED;
   };
 
-  // Pick photo from gallery
+
   const pickPhoto = async () => {
     const hasPermission = await requestMediaPermission('gallery');
     if (!hasPermission) {
@@ -130,7 +125,6 @@ const TravelLogFeature = () => {
     );
   };
 
-  // Take photo with camera
   const takePhoto = async () => {
     const hasPermission = await requestMediaPermission('camera');
     if (!hasPermission) {
@@ -152,7 +146,7 @@ const TravelLogFeature = () => {
     );
   };
 
-  // Save a new travel log
+
   const saveLog = () => {
     if (!location && !manualLocation) {
       Alert.alert('Error', 'Please provide a location');
@@ -169,7 +163,6 @@ const TravelLogFeature = () => {
       notes,
       timestamp: new Date().toISOString(),
     };
-    console.log(newLog);
     const updatedLogs = [...logs, newLog];
     setLogs(updatedLogs);
     saveLogs(updatedLogs);
@@ -180,9 +173,8 @@ const TravelLogFeature = () => {
     Alert.alert('Success', 'Travel log saved!');
   };
 
-  // Render Feed View
   const renderFeedView = () => (
-    <ScrollView style={styles.feedContainer}>
+    <View style={styles.feedContainer}>
       {logs.map((log) => (
         <View key={log.id} style={styles.logCard}>
           {log.photo && (
@@ -202,10 +194,9 @@ const TravelLogFeature = () => {
           </Text>
         </View>
       ))}
-    </ScrollView>
+    </View>
   );
 
-  // Render Map View
   const renderMapView = () => (
     <MapView
       style={styles.map}
@@ -233,8 +224,7 @@ const TravelLogFeature = () => {
   );
 
   return (
-    <View style={styles.container}>
-      {/* Input Form */}
+    <ScrollView style={styles.container}>
       <View style={styles.form}>
         <Text style={styles.label}>Location</Text>
         <Button title="Get GPS Location" onPress={getLocation} />
@@ -274,7 +264,7 @@ const TravelLogFeature = () => {
         <Button title="Save Log" onPress={saveLog} />
       </View>
 
-      {/* View Toggle */}
+
       <View style={styles.toggleButtons}>
         <TouchableOpacity
           style={[styles.toggleButton, viewMode === 'feed' && styles.activeButton]}
@@ -290,18 +280,17 @@ const TravelLogFeature = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Display Logs */}
       {viewMode === 'feed' ? renderFeedView() : renderMapView()}
-    </View>
+    </ScrollView>
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
     backgroundColor: '#f5f5f5',
+    marginBottom: 20,
   },
   form: {
     backgroundColor: '#fff',

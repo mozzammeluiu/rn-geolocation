@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "309654726853",
+    "firebase_url": "https://smarttaxi-cfb04.firebaseio.com",
+    "project_id": "smarttaxi-cfb04",
+    "storage_bucket": "smarttaxi-cfb04.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309654726853:android:714dfae21b5ba2b2c028ac",
+        "android_client_info": {
+          "package_name": "com.yeamazing"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "309654726853-gdot6hgbivje8h7e9ndabl1mr3lktte8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzcddrrv_gEkFA5pI_OFh5tZyrgWomzBI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "309654726853-gdot6hgbivje8h7e9ndabl1mr3lktte8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
