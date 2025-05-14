@@ -7,7 +7,7 @@ const ChatNav = createNativeStackNavigator();
 const ChatStack = () => (
   <ChatNav.Navigator>
      <ChatNav.Screen name="Auth" component={AuthScreen} />
-    <ChatNav.Screen name="ChatList" component={ChatListScreen} />
+    <ChatNav.Screen name="ChatList" component={ChatListScreen}/>
     <ChatNav.Screen name="Chat" component={ChatScreen} />
   </ChatNav.Navigator>
 );

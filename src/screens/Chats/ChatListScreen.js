@@ -1,6 +1,14 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useState, useEffect} from 'react';
-import {View, Text, FlatList, TextInput, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import firebase from '../../../firebase';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -34,30 +42,38 @@ const ChatListScreen = ({navigation}) => {
     return () => unsubscribe();
   }, []);
 
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          await firebase.auth().signOut();
+          navigation.replace('Auth');
+        },
+      },
+    ]);
+  };
+
   const filteredUsers = users.filter(user =>
     user.username.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
-    <View style={{padding: 20}}>
-      <View style={{flexDirection: 'row'}}>
+    <View style={styles.container}>
+      <View style={styles.topBar}>
         <TextInput
           placeholder="Search users..."
           value={search}
           onChangeText={setSearch}
-          style={{borderWidth: 1, marginBottom: 10, padding: 10, flex: 1}}
+          style={styles.searchInput}
         />
-        <Ionicons
-          onPress={() =>  navigation.navigate('Chat')}
-          name="person-add"
-          size={34}
-          style={{
-            alignSelf: 'center',
-            marginTop: -10,
-            marginLeft: 10,
-          }}
-        />
+        <TouchableOpacity onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={30} style={styles.icon} />
+        </TouchableOpacity>
       </View>
+
       <FlatList
         data={filteredUsers}
         keyExtractor={item => item.id}
@@ -69,13 +85,17 @@ const ChatListScreen = ({navigation}) => {
                 username: item.username,
               })
             }>
-            <View
-              style={{padding: 10, flexDirection: 'row', alignItems: 'center'}}>
-              <Text>{item.username}</Text>
-              <Text
-                style={{marginLeft: 10, color: item.online ? 'green' : 'red'}}>
-                {item.online ? 'Online' : 'Offline'}
-              </Text>
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.username}>{item.username}</Text>
+                <Text
+                  style={[
+                    styles.status,
+                    {color: item.online ? 'green' : 'red'},
+                  ]}>
+                  {item.online ? 'Online' : 'Offline'}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
         )}
@@ -83,5 +103,53 @@ const ChatListScreen = ({navigation}) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    flex: 1,
+    backgroundColor: '#f7f7f7',
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  searchInput: {
+    flex: 1,
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 10,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+  },
+  icon: {
+    marginLeft: 10,
+    color: '#333',
+  },
+  card: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    shadowColor: '#d5d5d5',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  status: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});
 
 export default ChatListScreen;

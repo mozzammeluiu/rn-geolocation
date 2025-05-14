@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-native/no-inline-styles */
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
   TextInput,
-  Button,
   ScrollView,
   Image,
   StyleSheet,
@@ -15,12 +15,19 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'react-native-image-picker';
 import Geolocation from 'react-native-geolocation-service';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import MapView, { Marker } from 'react-native-maps';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import MapView, {Marker} from 'react-native-maps';
 import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
+import Toast from 'react-native-toast-message';
 
-const TravelLogFeature = () => {
+const AppButton = ({title, onPress, style}) => (
+  <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
+    <Text style={styles.buttonText}>{title}</Text>
+  </TouchableOpacity>
+);
+
+const TravelLogFeature = ({navigation}) => {
   const [logs, setLogs] = useState([]);
   const [location, setLocation] = useState(null);
   const [manualLocation, setManualLocation] = useState('');
@@ -32,7 +39,7 @@ const TravelLogFeature = () => {
     loadLogs();
   }, []);
 
-  const saveLogs = async (newLogs) => {
+  const saveLogs = async newLogs => {
     try {
       await AsyncStorage.setItem('travelLogs', JSON.stringify(newLogs));
     } catch (error) {
@@ -51,11 +58,11 @@ const TravelLogFeature = () => {
     }
   };
 
-
   const requestLocationPermission = async () => {
-    const permission = Platform.OS === 'ios'
-      ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
-      : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+    const permission =
+      Platform.OS === 'ios'
+        ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
+        : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
 
     const result = await check(permission);
     if (result === RESULTS.GRANTED) {
@@ -66,7 +73,6 @@ const TravelLogFeature = () => {
     return requestResult === RESULTS.GRANTED;
   };
 
-
   const getLocation = async () => {
     const hasPermission = await requestLocationPermission();
     if (!hasPermission) {
@@ -75,45 +81,44 @@ const TravelLogFeature = () => {
     }
 
     Geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         setLocation({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
         setManualLocation('');
       },
-      (error) => {
+      error => {
         Alert.alert('Error', `Failed to get location: ${error.message}`);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
   };
 
-  const requestMediaPermission = async (type) => {
+  const requestMediaPermission = async () => {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.CAMERA,
       {
-          title: 'Camera Permission',
-          message: 'Yeamazing Needs your camera permission',
-          buttonNeutral: 'Ask me later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'Ok',
+        title: 'Camera Permission',
+        message: 'Yeamazing Needs your camera permission',
+        buttonNeutral: 'Ask me later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'Ok',
       },
-  );
-    return granted === RESULTS.GRANTED;
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
 
-
   const pickPhoto = async () => {
-    const hasPermission = await requestMediaPermission('gallery');
+    const hasPermission = await requestMediaPermission();
     if (!hasPermission) {
       Alert.alert('Permission Denied', 'Gallery access is required');
       return;
     }
 
     ImagePicker.launchImageLibrary(
-      { mediaType: 'photo', includeBase64: true },
-      (response) => {
+      {mediaType: 'photo', includeBase64: true},
+      response => {
         if (response.didCancel) {
           console.log('User cancelled image picker');
         } else if (response.errorCode) {
@@ -121,20 +126,20 @@ const TravelLogFeature = () => {
         } else {
           setPhoto(response.assets[0].base64);
         }
-      }
+      },
     );
   };
 
   const takePhoto = async () => {
-    const hasPermission = await requestMediaPermission('camera');
+    const hasPermission = await requestMediaPermission();
     if (!hasPermission) {
       Alert.alert('Permission Denied', 'Camera access is required');
       return;
     }
 
     ImagePicker.launchCamera(
-      { mediaType: 'photo', includeBase64: true },
-      (response) => {
+      {mediaType: 'photo', includeBase64: true},
+      response => {
         if (response.didCancel) {
           console.log('User cancelled camera');
         } else if (response.errorCode) {
@@ -142,10 +147,9 @@ const TravelLogFeature = () => {
         } else {
           setPhoto(response.assets[0].base64);
         }
-      }
+      },
     );
   };
-
 
   const saveLog = () => {
     if (!location && !manualLocation) {
@@ -156,13 +160,15 @@ const TravelLogFeature = () => {
       Alert.alert('Error', 'Please add some notes');
       return;
     }
+
     const newLog = {
       id: uuidv4(),
-      location: location || { city: manualLocation },
+      location: location || {city: manualLocation},
       photo: photo || null,
       notes,
       timestamp: new Date().toISOString(),
     };
+
     const updatedLogs = [...logs, newLog];
     setLogs(updatedLogs);
     saveLogs(updatedLogs);
@@ -170,16 +176,20 @@ const TravelLogFeature = () => {
     setManualLocation('');
     setPhoto(null);
     setNotes('');
-    Alert.alert('Success', 'Travel log saved!');
+    Toast.show({
+      type: 'success',
+      text1: 'Your log created successfully 👋',
+    });
+    navigation.navigate('Home');
   };
 
   const renderFeedView = () => (
     <View style={styles.feedContainer}>
-      {logs.map((log) => (
+      {logs.map(log => (
         <View key={log.id} style={styles.logCard}>
           {log.photo && (
             <Image
-              source={{ uri: `data:image/jpeg;base64,${log.photo}` }}
+              source={{uri: `data:image/jpeg;base64,${log.photo}`}}
               style={styles.logImage}
             />
           )}
@@ -205,11 +215,10 @@ const TravelLogFeature = () => {
         longitude: location?.longitude || -122.4324,
         latitudeDelta: 10,
         longitudeDelta: 10,
-      }}
-    >
+      }}>
       {logs
-        .filter((log) => log.location.latitude) // Only show logs with GPS coordinates
-        .map((log) => (
+        .filter(log => log.location.latitude)
+        .map(log => (
           <Marker
             key={log.id}
             coordinate={{
@@ -227,9 +236,9 @@ const TravelLogFeature = () => {
     <ScrollView style={styles.container}>
       <View style={styles.form}>
         <Text style={styles.label}>Location</Text>
-        <Button title="Get GPS Location" onPress={getLocation} />
+        <AppButton title="Get GPS Location" onPress={getLocation} />
         {location && (
-          <Text>
+          <Text style={styles.gpsText}>
             Lat: {location.latitude}, Lon: {location.longitude}
           </Text>
         )}
@@ -242,41 +251,52 @@ const TravelLogFeature = () => {
 
         <Text style={styles.label}>Photo</Text>
         <View style={styles.photoButtons}>
-          <Button title="Pick from Gallery" onPress={pickPhoto} />
-          <Button title="Take Photo" onPress={takePhoto} />
+          <AppButton
+            title="Pick from Gallery"
+            onPress={pickPhoto}
+            style={{flex: 1, marginRight: 5}}
+          />
+          <AppButton
+            title="Take Photo"
+            onPress={takePhoto}
+            style={{flex: 1, marginLeft: 5}}
+          />
         </View>
         {photo && (
           <Image
-            source={{ uri: `data:image/jpeg;base64,${photo}` }}
+            source={{uri: `data:image/jpeg;base64,${photo}`}}
             style={styles.previewImage}
           />
         )}
 
         <Text style={styles.label}>Journal Notes</Text>
         <TextInput
-          style={[styles.input, { height: 100 }]}
+          style={[styles.input, {height: 100}]}
           placeholder="Write your travel notes..."
           value={notes}
           onChangeText={setNotes}
           multiline
         />
 
-        <Button title="Save Log" onPress={saveLog} />
+        <AppButton title="Save Log" onPress={saveLog} />
       </View>
-
 
       <View style={styles.toggleButtons}>
         <TouchableOpacity
-          style={[styles.toggleButton, viewMode === 'feed' && styles.activeButton]}
-          onPress={() => setViewMode('feed')}
-        >
-          <Text>Feed View</Text>
+          style={[
+            styles.toggleButton,
+            viewMode === 'feed' && styles.activeButton,
+          ]}
+          onPress={() => setViewMode('feed')}>
+          <Text style={[styles.toggleButtonText, viewMode === 'feed'  && {color:'#fff'}]}>Feed View</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.toggleButton, viewMode === 'map' && styles.activeButton]}
-          onPress={() => setViewMode('map')}
-        >
-          <Text>Map View</Text>
+          style={[
+            styles.toggleButton,
+            viewMode === 'map' && styles.activeButton,
+          ]}
+          onPress={() => setViewMode('map')}>
+          <Text style={[styles.toggleButtonText,viewMode === 'map'  && {color:'#fff'}]}>Map View</Text>
         </TouchableOpacity>
       </View>
 
@@ -287,56 +307,74 @@ const TravelLogFeature = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 10,
     backgroundColor: '#f5f5f5',
-    marginBottom: 20,
   },
   form: {
     backgroundColor: '#fff',
     padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    elevation: 2,
+    borderRadius: 12,
+    marginBottom: 15,
+    elevation: 3,
   },
   label: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginVertical: 5,
+    fontWeight: '600',
+    marginBottom: 6,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
+    borderRadius: 8,
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 12,
+    backgroundColor: '#fff',
+  },
+  gpsText: {
+    marginVertical: 6,
+    color: '#333',
   },
   photoButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 10,
   },
   previewImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 5,
+    width: '100%',
+    height: 150,
+    borderRadius: 8,
     marginBottom: 10,
+  },
+  button: {
+    backgroundColor: '#002f87',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
   toggleButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   toggleButton: {
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderColor: '#002f87',
     marginHorizontal: 5,
   },
+  toggleButtonText: {
+    color: '#002f87',
+    fontWeight: '500',
+  },
   activeButton: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: '#002f87',
   },
   feedContainer: {
     flex: 1,
@@ -344,23 +382,24 @@ const styles = StyleSheet.create({
   logCard: {
     backgroundColor: '#fff',
     padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 12,
+    marginBottom: 12,
     elevation: 2,
   },
   logImage: {
     width: '100%',
     height: 200,
-    borderRadius: 5,
+    borderRadius: 8,
     marginBottom: 10,
   },
   logLocation: {
     fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 5,
   },
   logNotes: {
     fontSize: 14,
-    marginVertical: 5,
+    marginBottom: 5,
   },
   logTimestamp: {
     fontSize: 12,
@@ -369,6 +408,7 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
     height: 300,
+    borderRadius: 12,
   },
 });
 

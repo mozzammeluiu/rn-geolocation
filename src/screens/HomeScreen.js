@@ -10,7 +10,7 @@ function truncateText(str, maxLength) {
 }
 
 const emptyLogs = () => (
-  <View style={{ alignItems: 'center', marginTop: 50 }}>
+  <View style={{ alignItems: 'center', marginTop: '50%' }}>
     <Text style={{ fontSize: 16, color: '#777' }}>
       No Travel Logs Available. Add one!
     </Text>
@@ -37,7 +37,6 @@ export default function HomeScreen({navigation}) {
 
   return (
     <View style={{flex: 1}}>
-      {/* Floating Add Button */}
       <View
         style={{
           position: 'absolute',
@@ -49,7 +48,7 @@ export default function HomeScreen({navigation}) {
           onPress={() => navigation.navigate('NewLog')}
           name="add-circle"
           size={40}
-          color="#4CAF50"
+          color="#002f87"
         />
       </View>
 
