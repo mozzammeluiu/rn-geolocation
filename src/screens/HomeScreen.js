@@ -9,6 +9,15 @@ function truncateText(str, maxLength) {
   return str.slice(0, maxLength) + '...';
 }
 
+const emptyLogs = () => (
+  <View style={{ alignItems: 'center', marginTop: 50 }}>
+    <Text style={{ fontSize: 16, color: '#777' }}>
+      No Travel Logs Available. Add one!
+    </Text>
+  </View>
+);
+
+
 export default function HomeScreen({navigation}) {
   const [logs, setLogs] = useState([]);
 
@@ -85,6 +94,7 @@ export default function HomeScreen({navigation}) {
             </View>
           </View>
         )}
+         ListEmptyComponent={emptyLogs}
       />
     </View>
   );
