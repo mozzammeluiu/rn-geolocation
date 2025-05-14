@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ const ChatScreen = ({ navigation, route }) => {
   const { userId, username } = route.params;
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
+  const flatListRef = useRef(null);
   const currentUser = firebase.auth().currentUser;
   const chatId = [currentUser.uid, userId].sort().join('_');
 
@@ -56,30 +57,37 @@ const ChatScreen = ({ navigation, route }) => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={90}
-    >
+      keyboardVerticalOffset={90}>
       <Text style={styles.header}>Chat with {username}</Text>
+
       <FlatList
+        ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View
             style={[
-              styles.messageBubble,
-              item.senderId === currentUser.uid ? styles.myMessage : styles.theirMessage,
-            ]}
-          >
-            <Text>{item.text}</Text>
+              styles.messageContainer,
+              item.senderId === currentUser.uid
+                ? styles.myMessage
+                : styles.theirMessage,
+            ]}>
+            <Text style={styles.messageText}>{item.text}</Text>
           </View>
         )}
-        contentContainerStyle={{ paddingVertical: 10 }}
+        contentContainerStyle={styles.messagesList}
+        onContentSizeChange={() =>
+          flatListRef.current?.scrollToEnd({ animated: true })
+        }
       />
+
       <View style={styles.inputContainer}>
         <TextInput
           value={text}
           onChangeText={setText}
           style={styles.input}
           placeholder="Type a message"
+          placeholderTextColor="#999"
         />
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <Text style={styles.sendButtonText}>Send</Text>
@@ -92,55 +100,68 @@ const ChatScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 10,
+    backgroundColor: '#f1f3f6',
   },
   header: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    paddingVertical: 16,
     textAlign: 'center',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e1e1',
   },
-  messageBubble: {
-    padding: 12,
-    marginVertical: 4,
+  messagesList: {
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+  },
+  messageContainer: {
     maxWidth: '75%',
-    borderRadius: 12,
+    padding: 12,
+    marginVertical: 6,
+    borderRadius: 18,
   },
   myMessage: {
-    backgroundColor: '#DCF8C6',
+    backgroundColor: '#002f87',
     alignSelf: 'flex-end',
+    borderTopRightRadius: 0,
   },
   theirMessage: {
-    backgroundColor: '#ECECEC',
+    backgroundColor: '#e5e5ea',
     alignSelf: 'flex-start',
+    borderTopLeftRadius: 0,
+  },
+  messageText: {
+    color: '#fff',
+    fontSize: 15,
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    paddingTop: 8,
-    paddingHorizontal: 5,
+    borderColor: '#ddd',
+    alignItems: 'center',
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    backgroundColor: '#f1f1f1',
     borderRadius: 25,
-    paddingHorizontal: 15,
     paddingVertical: 8,
+    paddingHorizontal: 16,
+    fontSize: 16,
     marginRight: 10,
   },
   sendButton: {
     backgroundColor: '#002f87',
-    borderRadius: 25,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
+    borderRadius: 25,
   },
   sendButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });
 

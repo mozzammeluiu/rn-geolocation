@@ -60,6 +60,37 @@ const ChatListScreen = ({navigation}) => {
     user.username.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const renderItem = ({item}) => (
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate('Chat', {
+          userId: item.id,
+          username: item.username,
+        })
+      }>
+      <View style={styles.card}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {item.username.charAt(0).toUpperCase()}
+          </Text>
+          <View
+            style={[
+              styles.statusDot,
+              {backgroundColor: item.online ? '#34C759' : '#ccc'},
+            ]}
+          />
+        </View>
+        <View style={styles.cardContent}>
+          <Text style={styles.username}>{item.username}</Text>
+          <Text style={[styles.statusText, {color: item.online ? '#34C759' : '#999'}]}>
+            {item.online ? 'Online' : 'Offline'}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={22} color="#bbb" />
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
@@ -68,37 +99,19 @@ const ChatListScreen = ({navigation}) => {
           value={search}
           onChangeText={setSearch}
           style={styles.searchInput}
+          placeholderTextColor="#999"
         />
-        <TouchableOpacity onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={30} style={styles.icon} />
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+          <Ionicons name="log-out-outline" size={18} color="#fff" />
         </TouchableOpacity>
       </View>
 
       <FlatList
         data={filteredUsers}
         keyExtractor={item => item.id}
-        renderItem={({item}) => (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('Chat', {
-                userId: item.id,
-                username: item.username,
-              })
-            }>
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.username}>{item.username}</Text>
-                <Text
-                  style={[
-                    styles.status,
-                    {color: item.online ? 'green' : 'red'},
-                  ]}>
-                  {item.online ? 'Online' : 'Offline'}
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
+        renderItem={renderItem}
+        contentContainerStyle={{paddingBottom: 20}}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -106,49 +119,75 @@ const ChatListScreen = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 16,
     flex: 1,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#f2f4f8',
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   searchInput: {
     flex: 1,
-    borderWidth: 1,
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    fontSize: 16,
+  },
+  logoutBtn: {
+    backgroundColor: '#002f87',
+    marginLeft: 10,
     padding: 10,
     borderRadius: 10,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
-  },
-  icon: {
-    marginLeft: 10,
-    color: '#333',
-  },
-  card: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
-    shadowColor: '#d5d5d5',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 3,
   },
-  cardHeader: {
+  card: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 12,
+    elevation: 1,
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#dde3f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+    position: 'relative',
+  },
+  avatarText: {
+    fontSize: 18,
+    color: '#002f87',
+    fontWeight: 'bold',
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  cardContent: {
+    flex: 1,
   },
   username: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
-  status: {
-    fontSize: 14,
-    fontWeight: '500',
+  statusText: {
+    fontSize: 13,
+    marginTop: 2,
   },
 });
 

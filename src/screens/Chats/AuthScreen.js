@@ -1,9 +1,9 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, {useState} from 'react';
 import {
   View,
   TextInput,
-  Button,
+  Text,
+  TouchableOpacity,
   Alert,
   ActivityIndicator,
   StyleSheet,
@@ -17,8 +17,13 @@ const AuthScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const signUp = async () => {
+    if (!username) {
+      Alert.alert('Validation', 'Please enter a username');
+      return;
+    }
     setLoading(true);
     try {
       const {user} = await firebase
@@ -32,9 +37,10 @@ const AuthScreen = ({navigation}) => {
       setPassword('');
       Toast.show({
         type: 'success',
-        text1: 'Your account created successfully 👋',
+        text1: 'Account created successfully 👋',
         text2: 'Please Sign in to access your account',
       });
+      setIsSignUp(false); // Go to sign-in after sign-up
     } catch (error) {
       Alert.alert('Error', error.message);
     } finally {
@@ -61,30 +67,61 @@ const AuthScreen = ({navigation}) => {
     }
   };
 
+  const handleSubmit = () => {
+    if (isSignUp) {
+      signUp();
+    } else {
+      signIn();
+    }
+  };
+
   return (
-    <View style={{flex: 1, padding: 20, justifyContent: 'center'}}>
-      <TextInput
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-        style={{borderWidth: 1, marginBottom: 10, padding: 10}}
-      />
+    <View style={styles.container}>
+      <Text style={styles.title}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
+
+      {isSignUp && (
+        <TextInput
+          placeholder="Username"
+          placeholderTextColor="#000"
+          value={username}
+          onChangeText={setUsername}
+          style={styles.input}
+        />
+      )}
       <TextInput
         placeholder="Email"
+        placeholderTextColor="#000"
         value={email}
         onChangeText={setEmail}
-        style={{borderWidth: 1, marginBottom: 10, padding: 10}}
+        style={styles.input}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
       <TextInput
         placeholder="Password"
+        placeholderTextColor="#000"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        style={{borderWidth: 1, marginBottom: 10, padding: 10}}
+        style={styles.input}
       />
-      <Button title="Sign Up" onPress={signUp} color="#002f87"/>
-      <View style={{marginTop: 10}} />
-      <Button title="Sign In" onPress={signIn} color="#002f87"/>
+
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>
+          {isSignUp ? 'Sign Up' : 'Sign In'}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => setIsSignUp(prev => !prev)}
+        style={styles.switchMode}
+      >
+        <Text style={styles.switchText}>
+          {isSignUp
+            ? 'Already have an account? Sign In'
+            : "Don't have an account? Sign Up"}
+        </Text>
+      </TouchableOpacity>
 
       {/* Full-screen Loader */}
       <Modal transparent={true} animationType="none" visible={loading}>
@@ -97,6 +134,50 @@ const AuthScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    backgroundColor: '#f5f8ff',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#002f87',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#000',
+    marginBottom: 15,
+  },
+  button: {
+    backgroundColor: '#002f87',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  switchMode: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  switchText: {
+    color: '#002f87',
+    fontSize: 14,
+  },
   loaderContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

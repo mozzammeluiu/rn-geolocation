@@ -1,5 +1,5 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {NavigationContainer} from '@react-navigation/native';
+import {getFocusedRouteNameFromRoute, NavigationContainer} from '@react-navigation/native';
 import {useEffect} from 'react';
 import firebase from '../firebase';
 import ChatStack from './stacks/ChatStack';
@@ -9,8 +9,17 @@ import Toast from 'react-native-toast-message';
 
 const Tab = createBottomTabNavigator();
 
+const getTabBarStyle = route => {
+  const routeName = getFocusedRouteNameFromRoute(route) ?? '';
+  const hiddenScreens = ['ChatList', 'Chat', 'NewLog'];
+  if (hiddenScreens.includes(routeName)) {
+    return {display: 'none'};
+  }
+  return {};
+}
 const screenOptions = ({route}) => ({
   headerShown: false,
+  tabBarStyle: getTabBarStyle(route),
   tabBarIcon: ({focused, color, size}) => {
     let iconName;
     if (route.name === 'Home') {
